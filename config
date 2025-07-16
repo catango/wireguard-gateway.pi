@@ -1,0 +1,12 @@
+IMG_NAME="wg_gateway"
+RELEASE="bookworm"
+LOCALE_DEFAULT="en_US.UTF-8"
+TARGET_HOSTNAME="wireguard_gw_pi"
+KEYBOARD_KEYMAP="de"
+TIMEZONE_DEFAULT="Europe/Berlin"
+FIRST_USER_NAME="pi"
+FIRST_USER_PASS="debug"                 # your password
+DISABLE_FIRST_BOOT_USER_RENAME=1
+ENABLE_SSH=1
+WPA_COUNTRY="DE"
+STAGE_LIST="stage0 stage1 stage2 stage2-wgep"

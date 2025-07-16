@@ -1,0 +1,78 @@
+#!/bin/bash
+
+get_overlay_now() {
+  grep -q "overlayroot=tmpfs" /proc/cmdline
+  echo $?
+}
+
+disable_overlay() {
+if [ $(get_overlay_now) -eq 0 ] ; then
+    raspi-config nonint disable_overlayfs
+    reboot
+fi
+}
+
+enable_overlay() {
+if [ $(get_overlay_now) -eq 1 ] ; then
+    raspi-config nonint enable_overlayfs
+    reboot
+fi
+}
+
+#check for config
+
+WG_CONFIG_DIR='/boot/firmware/'
+WG_CONFIG="${WG_CONFIG_DIR}/wg_config.txt"
+
+if [ ! -f "${WG_CONFIG}" ]; then
+    echo "Config file not found. Boot interrupted" >&2
+    exit 1
+else
+    # shellcheck disable=SC1090
+    . "${WG_CONFIG}"
+fi
+
+# check for mandatory config parameter
+if [ -z "${WG_SERVER_PUBKEY}" ]; then
+    echo "Wireguard server public key not set. Boot interrupted" >&2
+    exit 1
+fi
+
+if [ -z "${WG_SERVER_URL}" ]; then
+    echo "Wireguard server url or ip not set. Boot interrupted" >&2
+    exit 1
+fi
+
+# check for wg keys
+WG_KEY_DIR='/etc/wireguard/'
+WG_DEFAULT_PRIVKEY='wg0.key'
+WG_DEFAULT_PUBKEY='wg0.pub'
+
+if [ -z "${WG_CLIENT_PRIVKEY}" ]; then
+    WG_CLIENT_PRIVKEY="${WG_DEFAULT_PRIVKEY}"
+fi
+if [ -f "${WG_CONFIG_DIR}/${WG_CLIENT_PRIVKEY}" ]; then
+    disable_overlay
+    echo "Wireguard client private key file found for deployment"
+    umask 077; cp "${WG_CONFIG_DIR}/${WG_CLIENT_PRIVKEY}" "${WG_KEY_DIR}/${WG_DEFAULT_PRIVKEY}"
+elif [ ! -f "${WG_KEY_DIR}/${WG_DEFAULT_PRIVKEY}" ]; then
+    disable_overlay
+    echo "No Wireguard client private key found. Generating new keypair"
+    wg genkey > "${WG_KEY_DIR}/${WG_DEFAULT_PRIVKEY}"
+else
+    disable_overlay
+    wg pubkey < "${WG_KEY_DIR}/${WG_DEFAULT_PRIVKEY}" > "${WG_KEY_DIR}/${WG_DEFAULT_PUBKEY}"
+fi
+
+if [ -z "${WG_CLIENT_PUBKEY}" ]; then
+    WG_CLIENT_PUBKEY="${WG_DEFAULT_PUBKEY}"
+fi
+if [ -f "${WG_CONFIG_DIR}/${WG_CLIENT_PUBKEY}" ]; then
+    disable_overlay
+    echo "Wireguard client public key file found for deployment"
+    umask 077; cp "${WG_CONFIG_DIR}/${WG_CLIENT_PUBKEY}" "${WG_KEY_DIR}/${WG_DEFAULT_PUBKEY}"
+fi
+
+echo "Current public key for wireguard server is ${WG_CLIENT_PUBKEY}" > /etc/issue
+
+enable_overlay

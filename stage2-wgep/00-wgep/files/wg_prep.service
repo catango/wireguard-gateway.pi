@@ -1,0 +1,10 @@
+[Unit]
+Description=First boot
+Before=wg-quick@wg0.service
+
+[Service]
+ExecStart=/usr/local/bin/wg_prep.sh
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,38 @@
+name: Build wireguard-gateway
+run-name: build and upload wireguard-gateway raspberry pi image
+on: 
+  pull_request:
+  push:
+    paths-ignore:
+      - .github/workflows/lint.yml
+      - LICENSE
+      - README.md
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: usimd/pi-gen-action@v1
+        id: build
+        with:
+          image-name: musicbox.pi
+          pi-gen-release: Raspberry Pi reference
+          pi-gen-version: 2024-11-19-raspios-bookworm-armhf
+          locale: en_US.UTF-8
+          hostname: wg-gateway.pi
+          keyboard-keymap: de
+          timezone: Europe/Berlin
+          username: pi
+          password: 'debug'
+          disable-first-boot-user-rename: 1
+          enable-ssh: 1
+          wpa-country: DE
+          stage-list: stage0 stage1 stage2 ./stage2-wgep
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wg-gateway.pi-image
+          path: ${{ steps.build.outputs.image-path }}
