@@ -1,11 +1,12 @@
 #!/bin/bash -e
 
-# imstall config
+# install config
 install -m 644 -o 0 -g 0 files/wg_config.txt "${ROOTFS_DIR}/boot/firmware/"
 
 # install wireguard files
 install -m 644 -o 0 -g 0 files/wg_prep.service "${ROOTFS_DIR}/etc/systemd/system/"
-install -m 644 -o 0 -g 0 files/wg_prep.sh "${ROOTFS_DIR}/usr/local/bin/"
+install -m 755 -o 0 -g 0 files/wg_prep.sh "${ROOTFS_DIR}/usr/local/bin/"
+install -m 755 -o 0 -g 0 files/write_etc_issue.sh "${ROOTFS_DIR}/usr/local/bin/"
 
 install -m 644 -o 0 -g 0 files/wg0.conf "${ROOTFS_DIR}/etc/wireguard/"
 install -m 644 -o 0 -g 0 files/70-wireguard-routing.conf "${ROOTFS_DIR}/etc/sysctl.d/"

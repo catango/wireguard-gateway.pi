@@ -8,14 +8,16 @@ get_overlay_now() {
 disable_overlay() {
 if [ "$(get_overlay_now)" -eq 0 ] ; then
     raspi-config nonint disable_overlayfs
-    reboot
+    echo "overlay disabled"
+    #reboot
 fi
 }
 
 enable_overlay() {
 if [ "$(get_overlay_now)" -eq 1 ] ; then
     raspi-config nonint enable_overlayfs
-    reboot
+    echo "overlay enabled"
+    #reboot
 fi
 }
 

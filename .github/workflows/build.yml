@@ -18,7 +18,7 @@ jobs:
       - uses: usimd/pi-gen-action@v1
         id: build
         with:
-          image-name: musicbox.pi
+          image-name: wireguard-gw.pi
           pi-gen-release: Raspberry Pi reference
           pi-gen-version: 2024-11-19-raspios-bookworm-armhf
           locale: en_US.UTF-8

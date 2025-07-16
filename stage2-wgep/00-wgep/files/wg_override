@@ -1,8 +1,10 @@
 # drop in file for wg-quick to load required environment variables
 
-[Service]
-Environment="WG_SERVER_PORT=51820" # set default value for server port, if not defined in env file
-EnvironmentFile=/boot/firmware/wg_config.txt
+[Unit]
 After=wg_prep.service
 Requires=wg_prep.service
-ExecStopPost=echo "\nVPN connection not established. Please check keys and config\m" >> /etc/issue
+
+[Service]
+Environment="WG_SERVER_PORT=51820"
+EnvironmentFile=/boot/firmware/wg_config.txt
+ExecStopPost=/usr/local/bin/write_etc_issue.sh

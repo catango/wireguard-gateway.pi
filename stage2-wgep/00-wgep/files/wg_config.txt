@@ -1,12 +1,12 @@
 # Wireguard server public key
-WG_SERVER_PUBKEY=<pubkey>
+WG_SERVER_PUBKEY="<pubkey>"
 
 # Wireguard server url or IP
-WG_SERVER_URL=wg-access.xyz.com
+WG_SERVER_URL="wg-access.xyz.com"
 
 # Wireguard server port
-# WG_SERVER_PORT=51820
+# WG_SERVER_PORT="51820"
 
 # Client keys
-# WG_CLIENT_PRIVKEY=wg0.key
-# WG_CLIENT_PUBKEY=wg0.pub
+# WG_CLIENT_PRIVKEY="wg0.key"
+# WG_CLIENT_PUBKEY="wg0.pub"
