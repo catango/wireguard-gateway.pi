@@ -1,6 +1,7 @@
 [Unit]
 Description=Preparation for wireguard
-Before=wg-quick@wg0.service
+#Before=wg-quick@wg0.service
+After=NetworkManager.service 
 
 [Service]
 ExecStart=/usr/local/bin/wg_prep.sh
