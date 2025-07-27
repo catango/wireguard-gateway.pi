@@ -1,9 +1,7 @@
 [Interface]
 Address = 172.31.0.2/24
 SaveConfig = true
-PostUp = wg set %i private-key /etc/wireguard/wg0.key
-PostUp = iptables -t nat -A POSTROUTING -o ${GATEWAY_INTERFACE} -j MASQUERADE
-PostDown = iptables -t nat -D POSTROUTING -o ${GATEWAY_INTERFACE} -j MASQUERADE
+PrivateKey = ${WG_CLIENT_PRIVATE_KEY}
 
 [Peer]
 PublicKey = ${WG_SERVER_PUBKEY}

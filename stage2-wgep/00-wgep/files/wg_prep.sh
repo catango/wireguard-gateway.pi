@@ -21,6 +21,7 @@ fi
 enable_overlay() {
 if [ "$(get_overlay_now)" -eq 1 ] ; then
     raspi-config nonint enable_overlayfs
+    raspi-config nonint enable_bootro
     echo "overlay enabled"
     #reboot
 fi
@@ -62,7 +63,7 @@ fi
 if [ -f "${RASPI_CONFIG_DIR}/${WG_CLIENT_PRIVKEY}" ]; then
     disable_overlay
     echo "Wireguard client private key file found for deployment"
-    umask 077; cp "${RASPI_CONFIG_DIR}/${WG_CLIENT_PRIVKEY}" "${WG_DIR}/${WG_DEFAULT_PRIVKEY}"
+    umask 077; mv "${RASPI_CONFIG_DIR}/${WG_CLIENT_PRIVKEY}" "${WG_DIR}/${WG_DEFAULT_PRIVKEY}"
 elif [ ! -f "${WG_DIR}/${WG_DEFAULT_PRIVKEY}" ]; then
     disable_overlay
     echo "No Wireguard client private key found. Generating new keypair"
@@ -80,27 +81,38 @@ fi
 if [ -f "${RASPI_CONFIG_DIR}/${WG_CLIENT_PUBKEY}" ]; then
     disable_overlay
     echo "Wireguard client public key file found for deployment"
-    umask 077; cp "${RASPI_CONFIG_DIR}/${WG_CLIENT_PUBKEY}" "${WG_DIR}/${WG_DEFAULT_PUBKEY}"
+    umask 077; mv "${RASPI_CONFIG_DIR}/${WG_CLIENT_PUBKEY}" "${WG_DIR}/${WG_DEFAULT_PUBKEY}"
 fi
 
-echo "Current public key for wireguard server is ${WG_CLIENT_PUBKEY}" > /etc/issue
+echo "Current public key for wireguard server is $(cat "${RASPI_CONFIG_DIR}/${WG_CLIENT_PUBKEY}")" > /etc/issue
 
 GATEWAY_INTERFACE=$(ip -o route get 8.8.8.8 | perl -nle 'if ( /dev\s+(\S+)/ ) {print $1}')
 
 if [ "${GATEWAY_INTERFACE}" = "lo" ]; then
     echo "No default route found. Probably no internet access"
     exit 1
+else
+    iptables -t nat -A POSTROUTING -o "${GATEWAY_INTERFACE}" -j MASQUERADE
 fi
 
 # reapply wireguard config
 if [ "$UPDATE_CONFIG" -eq 1 ]; then
-    export GATEWAY_INTERFACE="${GATEWAY_INTERFACE}"
-    export $(grep -v '^#' ${RASPI_CONFIG} | xargs -d '\n')
+    (set -a
+    # shellcheck disable=SC2034
+    WG_CLIENT_PRIVATE_KEY="$(cat "${WG_DIR}/${WG_DEFAULT_PRIVKEY}")"
+    # shellcheck source=./wg_config.txt
+    . ${RASPI_CONFIG}
+    if [ -z "${WG_SERVER_PORT}" ]; then
+        WG_SERVER_PORT=51820
+    fi
+    set +a
     envsubst < "${WG_CONFIG}.template" > "${WG_CONFIG}"
-    if $(nmcli connection show | grep wg0); then
+)
+    if nmcli connection show | grep wg0; then
         nmcli connection delete wg0
     fi
     nmcli connection import type wireguard file "${WG_CONFIG}"
+    rm "${WG_CONFIG}"
 fi
 
 enable_overlay
