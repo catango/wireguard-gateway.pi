@@ -100,7 +100,7 @@ if [ "$UPDATE_CONFIG" -eq 1 ]; then
     (set -a
     # shellcheck disable=SC2034
     WG_CLIENT_PRIVATE_KEY="$(cat "${WG_DIR}/${WG_DEFAULT_PRIVKEY}")"
-    # shellcheck source=./wg_config.txt
+    # shellcheck source=/dev/null
     . ${RASPI_CONFIG}
     if [ -z "${WG_SERVER_PORT}" ]; then
         WG_SERVER_PORT=51820
