@@ -11,7 +11,7 @@ disable_overlay() {
 if [ "$(get_overlay_now)" -eq 0 ] ; then
     raspi-config nonint disable_overlayfs
     echo "overlay disabled"
-    #reboot
+    reboot
 else
     # Overlay is already disabled. Wireguard config updates can be applied
     UPDATE_CONFIG=1
@@ -23,7 +23,7 @@ if [ "$(get_overlay_now)" -eq 1 ] ; then
     raspi-config nonint enable_overlayfs
     raspi-config nonint enable_bootro
     echo "overlay enabled"
-    #reboot
+    reboot
 fi
 }
 
